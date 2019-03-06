@@ -72,5 +72,5 @@ rat div(rat a, rat b)
 
 int main()
 {
-
+	return 0;
 }
