@@ -46,4 +46,5 @@ int main()
 	a.change_y(3);
 	cout << a.get_x() << " " << a.get_y() << endl;
 
+	
 }
