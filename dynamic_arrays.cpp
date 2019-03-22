@@ -1,67 +1,101 @@
 #include <iostream>
+#include <string>
+#include <assert.h>
 using namespace std;
 
-int *read(size_t n)
+int* read(int x)
 {
-	int *arr = new int[n];
+	int* arr = new int[x];
 
-	for (size_t i = 0; i < n; i++)
+	for (int i = 0; i < x; i++)
 	{
 		cin >> arr[i];
 	}
-
 	return arr;
 }
 
-void resize(int *& arr, size_t size, size_t new_size)
+void resize(int*& arr, int size, int newSize)
 {
-	int *new_array = new int[new_size];
+	assert(newSize > size);
+	assert(arr != nullptr);
 
-	for (size_t i = 0; i < size; i++)
+	int* newArr = new int[newSize];
+
+	for (int i = 0; i < size; i++)
 	{
-		new_array[i] = arr[i];
+		newArr[i] = arr[i];
 	}
-
 	delete[] arr;
-	arr = new_array;
+	arr = newArr;
 }
 
-void add_elements(int *& arr, size_t size, int br_numbers)
+void addElements(int *&arr, int size, int numbers)
 {
-	resize(arr, size, size + br_numbers);
+	resize(arr, size, size + numbers);
 
-	for (int i = 0; i < size + br_numbers; i++)
+	for (int i = size; i < size + numbers; i++)
 	{
 		cin >> arr[i];
 	}
-
 }
 
-int* erase(int * arr, size_t size, size_t index)
+int* erase(int * arr, int size, int left_index, int right_index)
 {
-	int * ans = new int[size - 1];
-	for (size_t i = 0; i < index; i++)
+	int* ans = new int[size - (right_index - left_index + 1)];
+
+	for (int i = 0; i < left_index; i++)
 	{
 		ans[i] = arr[i];
 	}
-	for (size_t i = index + 1; i < size; i++)
+	for (int i = right_index + 1; i < size; i++)
 	{
-		ans[i - 1] = arr[i];
+		ans[i - (right_index - left_index + 1)] = arr[i];
 	}
-
 	return ans;
 }
 
-void extend(int *& arr, size_t size, size_t newSize)
+int* erase_index(int *arr, int size, int index)
 {
-	resize(arr, size, newSize);
-	for (size_t i = size; i < newSize; i++)
+	return erase(arr, size, index, index);
+}
+
+int* extend(int * arr, int size, int num)
+{
+	resize(arr, size, num);
+
+	for (int i = size; i < size + num; i++)
 	{
 		arr[i] = 0;
 	}
+	return arr;
 }
 
 int main()
 {
-	
+	size_t sizeOfArray = 10;
+
+	int * arr = new int[sizeOfArray] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+	// Test single index erase
+	int * result = erase_index(arr, sizeOfArray, 1);
+	cout << "Erasing elements at index 1: " << endl;
+	cout << "Array: ";
+	for (size_t i = 0; i < sizeOfArray - 1; i++)
+	{
+		cout << result[i] << " ";
+	}
+	cout << endl;
+	delete[] result;
+
+	result = erase(arr, sizeOfArray, 0, 3);
+	cout << "Erasing elements at indexes [0, 3]: " << endl;
+	cout << "Array: ";
+	for (size_t i = 0; i < sizeOfArray - 4; i++)
+	{
+		cout << result[i] << " ";
+	}
+	cout << endl;
+
+	delete[] result;
+	delete[] arr;
 }
