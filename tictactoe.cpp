@@ -132,6 +132,7 @@ int main()
 	MoveWindow(console, r.left, r.top, 700, 500, TRUE); // 700 width, 500 height
 	draw();
 	gameplay();
+	system("Pause");
 }
 
 
