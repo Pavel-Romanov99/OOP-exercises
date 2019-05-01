@@ -1,144 +1,126 @@
 #include <iostream>
-#include <cstring>
+#include <algorithm>
 using namespace std;
 
-int const Max = 100;
-class Song {
-private:
-	char title[Max];
-	char artist[Max];
-	int duration;
-public:
-
-	Song()
-	{
-		strcpy_s(title, "");
-		strcpy_s(artist, "");
-		duration = 0;
-	}
-
-	Song(char const * new_title, char const* new_artist, int new_duration)
-	{
-		strncpy_s(this->title, new_title, Max - 1);
-		this->title[Max - 1] = '/0';
-		strncpy_s(artist, new_artist, Max - 1);
-		this->artist[Max - 1] = '/0';
-		this->duration = new_duration;
-	}
-
-	char const* getTitle() const
-	{
-		return title;
-	}
-
-	char const* getArtist() const
-	{
-		return artist;
-	}
-
-	int getDuration()
-	{
-		return duration;
-	}
-
-	void printSong()
-	{
-		cout << getTitle() << " " << getArtist() << " " << getDuration() << endl;
- 	}
-};
-
-class Playlist
+int const MAX = 100;
+class Set
 {
 private:
-	Song* playlist;
+	int *set;
 	int capacity;
 	int size;
 
-	void copy(Playlist const &other)
-	{
-		size = other.size;
-		capacity = other.capacity;
-		playlist = new Song[other.capacity];
-		for (int i = 0; i < other.size; i++)
-		{
-			playlist[i] = other.playlist[i];
-		}
-	}
 public:
-	Playlist(int num)
+	Set()
 	{
-		capacity = num;
 		size = 0;
-		playlist = new Song[capacity];
+		capacity = 0;
+		set = new int[capacity];
 	}
 
-	Playlist(Playlist const& other) {
-		copy(other);
-	}
-
-	~Playlist() {
-		delete[] playlist;
-	}
-
-	void addSong(Song const &song)
+	Set(int n)
 	{
-		if (size < capacity)
-		{
-			playlist[++size] = song;
-		}
-		else cout << "Playlist is full! " << endl;
+		size = 0;
+		capacity = n;
+		set = new int[capacity];
 	}
 
-	void printPlaylist()
+	bool contains(int x) const
 	{
+		bool contains = false;
 		for (int i = 1; i < size + 1; i++)
 		{
-			cout << playlist[i].getTitle() << " " << playlist[i].getArtist() << " " << playlist[i].getDuration() 
-				<< endl;
-		}
-	}
-
-	int totalDuration()
-	{
-		int sum = 0;
-		for (int i = 0; i < size; i++)
-		{
-			sum += playlist[i].getDuration();
-		}
-		return sum;
-	}
-
-	void longestSong()
-	{
-		Song longest_song;
-		for (int i = 0; i < size; i++)
-		{
-			if (longest_song.getDuration() < playlist[i].getDuration())
+			if (set[i] == x)
 			{
-				longest_song = playlist[i];
+				contains = true;
+				break;
 			}
 		}
-		longest_song.printSong();
+		return contains;
+	}
+
+	bool insert(int x)
+	{
+		if (contains(x) == true)
+		{
+			return false;
+		}
+		else
+		{
+			if (size < capacity)
+			{
+				set[++size] = x;
+				return true;
+			}
+		}
+	}
+
+	bool equals(const Set &other) const
+	{
+		if (size != other.size)
+		{
+			return false;
+		}
+
+		for (int i = 1; i < size + 1; i++)
+		{
+			if (!other.contains(set[i]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	void unifyWith(const Set &other)
+	{
+		for (int i = 1; i < other.size + 1; i++)
+		{
+			if (!this->contains(other.set[i]))
+			{
+				set[++size] = other.set[i];
+			}
+		}
+	}
+
+	void intersectWith(const Set &other)
+	{
+		Set temp(size);
+		for (int i = 1; i < other.size + 1; i++)
+		{
+			if (this->contains(other.set[i]))
+			{
+				temp.insert(set[i]);
+			}
+		}
+		size = temp.size;
+		set = temp.set;
+	}
+
+	void print()
+	{
+		
+		for (int i = 1; i < size + 1; i++)
+		{
+			cout << set[i] << " ";
+		}
+		cout << endl;
 	}
 };
 
 int main()
 {
-	Song a("MMA", "Azis", 323); 
-	Song b("Otlichen 6", "Toni Storaro", 420);
-	Song c("Poludei", "Djordan", 350);
-	Song d("Nonstop", "Drake", 212);
-	Song e("Bel djip", "BNR", 422);
-	Song f("Dim4ou", "422", 320);
-	Song g("Krisko", "Nezamenim", 293);
-	Playlist ab(50);
-	ab.addSong(a);
-	ab.addSong(b);
-	ab.addSong(c);
-	ab.addSong(d);
-	ab.addSong(e);
-	ab.addSong(f);
-	ab.addSong(g);
-	cout << ab.totalDuration() << endl;
-	ab.longestSong();
+	Set a(10);
+	a.insert(1);
+	a.insert(2);
+	a.insert(3);
+	Set b(10);
+	b.insert(1);
+	b.insert(2);
+	b.insert(33);
+
+	a.intersectWith(b);
+	a.print();
+	a.unifyWith(b);
+	a.print();
 }
