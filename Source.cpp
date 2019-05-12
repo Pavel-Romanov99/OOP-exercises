@@ -1,153 +1,248 @@
 #include <iostream>
+#include <vector>
+#include <cstring>
+#include <fstream>
 using namespace std;
 
-void increment_pointer(int* value)
+const int MAX = 100;
+class Rule
 {
-	(*value)++;
-}
+private:
+	char rule[MAX];
+public:
 
-void increment_reference(int& value)
-{
-	value++;
-}
-
-
-//First prime number after value
-int replace(int &value)
-{
-	int temp = value + 1;
-	while (true)
+	//default constructor
+	Rule()
 	{
-		bool isPrime = true;
-		for (int i = 2; i <= temp / 2; i++)
+		strcpy_s(rule, "");
+	}
+
+	//constructor
+	Rule(const char* other)
+	{
+		strcpy_s(rule, other);
+	}
+
+	//operator << for rules
+	friend ostream& operator<<(ostream& os, Rule &other)
+	{
+		os << other.rule;
+		return os;
+	}
+
+	// operator == 
+	bool operator==(const Rule &other)
+	{
+		bool check = true;
+
+		for (int i = 0; i < strlen(this->rule); i++)
 		{
-			if (temp % i == 0)
+			if (rule[i] != other.rule[i])
 			{
-				isPrime = false;
+				check = false;
 				break;
 			}
 		}
-		if (isPrime == true)
-		{
-			return temp;
-		}
-		else temp++;
+		return check;
 	}
-}
+};
 
+class Variables
+{
+private:
+	char name;
+	vector <Rule> rules;
 
-//first prime number after value
-int replacePointer(int *value)
-{
-int temp = *value + 1;
-while (true)
-{
-	bool isPrime = true;
-	for (int i = 2; i <= temp / 2; i++)
+public:
+
+	//default constructor
+	Variables()
 	{
-		if (temp % i == 0)
-		{
-			isPrime = false;
-			break;
-		}
+		this->name = 'S';
 	}
-	if (isPrime == true)
+	
+	//constructor
+	Variables(char var)
 	{
-		return temp;
-	}
-	else temp++;
-}
-}
-
-//Prints the adress of the first negative number
-int* firstNegative(int* arr, int size)
-{
-	int* ptr = nullptr;
-
-	for (int i = 0; i < size; i++)
-	{
-		if (*(arr + i) < 0)
+		if (var >= 65 && var <= 90)
 		{
-			ptr = (arr + i);
+			this->name = var;
 		}
 	}
-	return ptr;
-}
 
-//Prints the adress of the first row that contains a given symbol
-char* rowWithSymbol(char matrix[][5], int rows, int columns, char symbol)
-{
-	char *ptr = NULL;
-	for (int i = 0; i < rows; i++)
+	//getter
+	char getName()
 	{
-		for (int j = 0; j < columns; j++)
+		return name;
+	}
+
+	//adding a rule
+	void addRule(const Rule &other)
+	{
+		rules.push_back(other);
+	}
+
+	//finding the position in the array
+	int Position_(const Rule &other)
+	{
+		int counter = 0;
+
+		for (int i = 0; i < rules.size(); i++)
 		{
-			if (*(*(matrix + i) + j) == symbol)
+			if (rules[i] == other)
 			{
-				ptr = matrix[i];
-				break;
+				return counter;
 			}
+			counter++;
 		}
 	}
-	return ptr;
-}
 
-//Counts the number of integers that are greater than 5
-void numberFive(int *arr, int n)
-{
-	int br = 0;
-	for (int i = 0; i < n; i++)
+	//removing a rule
+	void removeRule(const Rule &other)
 	{
-		if (*(arr + i) > 5)
-		{
-			br++;
-		}
+		int n = Position_(other);
+		rules.erase(rules.begin() + n);
 	}
-	cout << br << endl;
-}
 
-//Makes a chess board
-void* chess(char a[][8])
-{
-	for (int i = 0; i < 8; i++)
+	//print variable rules
+	void PrintRules()
 	{
-		if (i % 2 == 0)
+		cout << this->name << " -> ";
+		for (int i = 0; i < rules.size(); i++)
 		{
-			for (int j = 0; j < 8; j++)
-			{
-				if (j % 2 == 0)
-				{
-					*(*(a + i) + j) = 'w';
-				}
-				else *(*(a + i) + j) = 'b';
-			}
+			cout << rules[i] << " | ";
 		}
-		if (i % 2 == 1)
+		// cout << rules[size];
+		cout << endl;
+	}
+
+	// operator << for variables
+	friend ostream& operator<<(ostream &os, Variables &other)
+	{
+		os << other.getName() << " -> ";
+		for (int i = 0; i < other.rules.size(); i++)
 		{
-			for (int j = 0; j < 8; j++)
-			{
-				if (j % 2 == 0)
-				{
-					*(*(a+i) + j) = 'b';
-				}
-				else *(*(a + i) + j) = 'w';
-			}
+			os << other.rules[i] << " | ";
+		}
+		os << endl;
+		return os;
+	}
+};
+
+//--------------------------------------------------------------------
+
+class CFG
+{
+private:
+	string name;
+	Variables *variables;
+	int size;
+	int capacity;
+
+	//Start variable
+	Variables start;
+public:
+
+	//default constructor
+	CFG()
+	{
+		name = "G";
+		capacity = 10;
+		variables = new Variables[capacity];
+		variables[++size] = this->start;
+	}
+
+	//constructor
+	CFG(string name, int capacity, Variables new_start)
+	{
+		this->name = name;
+		this->capacity = capacity;
+		this->start = new_start;
+		variables = new Variables[capacity];
+		variables[++size] = new_start;
+	}
+
+	//destructor
+	~CFG()
+	{
+		delete[] variables;
+	}
+
+	//Adding a variable to the grammar
+	void addVariable(const Variables &other)
+	{
+		if (size < capacity)
+		{
+			variables[++size] = other;
+		}
+		else cout << "Full!" << endl;
+	}
+
+	//Printing the grammar
+	void PrintGrammar()
+	{
+		for (int i = 1; i < this->size + 1; i++)
+		{
+			variables[i].PrintRules();
 		}
 	}
-	return a;
-}
+
+	//Write to file
+	void Write()
+	{
+		ofstream myfile;
+		myfile.open("CFG.txt");
+		
+		for (int i = 1; i < this->size + 1; i++)
+		{
+			myfile << variables[i] << endl;
+		}
+	}
+
+	//Union of grammars
+	CFG Unify(const CFG &G1, const CFG &G2)
+	{
+
+	}
+
+	//Concatenation of grammars
+	CFG Concatenate(const CFG &G1, const CFG &G2)
+	{
+
+	}
+};
 
 int main()
 {
-	char arr[8][8];
-	chess(arr);
+	Variables S;
+	Rule rule("1S1");
+	Rule a("LOL");
+	Rule b("HEY");
 
-	for (int i = 0; i < 8; i++)
-	{
-		for (int j = 0; j < 8; j++)
-		{
-			cout << *(*(arr + i) + j) << " "; 
-		}
-		cout << endl;
-	}
+	S.addRule(rule);
+	S.addRule(a);
+	S.addRule(b);
+
+	Variables A('A');
+	Rule e("101");
+	Rule f("0");
+
+	A.addRule(e);
+	A.addRule(f);
+
+	Variables C('C');
+	Rule c("121");
+	Rule d("15");
+
+	C.addRule(c);
+	C.addRule(d);
+
+	Variables H;
+
+	CFG grammar("G", 10, H);
+	grammar.addVariable(S);
+	grammar.addVariable(A);
+	grammar.addVariable(C);
+	grammar.PrintGrammar();
+	grammar.Write();
 }
