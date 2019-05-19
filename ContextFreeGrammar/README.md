@@ -1,29 +1,60 @@
-# Foobar
+# Context Free Grammar
 
-Foobar is a Python library for dealing with word pluralization.
+Проект за безконтекстни граматики на Павел Романов.
 
-## Installation
+## Какво влючва
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
+Проектът е съставен от 3 класа:
+* клас Rule
+* клас Variables
+* клас CFG 
+
+Обектите от клас Rule се инициализират така:
 
 ```bash
-pip install foobar
+Rule("rule");
 ```
+Променливите си имат име и вектор от правила. Имат методи с които може:
+* да се добави правило
+* да се премахне правило 
+* да се изведе правило чрез предефиниран оператор <<
 
-## Usage
-
+Клас CFG има име, динамичен масив от променливи и стартова променлива. Има методи за:
+* добавяне на променлива в граматиката
+* принтиране на граматиката
+* записване на граматиката във файл
+* обединение на две граматики
+```bash
+	grammar1.Unify(grammar2, grammar3);
+```
+където grammar3 е резултат от обединението на граматики 1 и 2.
+* конкатенация на две граматики
+```bash
+	grammar1.Concatenate(grammar2, grammar3);
+```
+* Звезда на Клини на граматика
+```bash
+		grammar1.Klenee_star(grammar3);
+```
+където граматика 3 е резултат от звезда на Клини на граматика 1.
+## Примерно инициалиране на граматика:
 ```python
-import foobar
+	Variables S("S");
+	Rule rule("1S1");
+	Rule a("LOL");
+	Rule b("HEY");
 
-foobar.pluralize('word') # returns 'words'
-foobar.pluralize('goose') # returns 'geese'
-foobar.singularize('phenomena') # returns 'phenomenon'
+	S.addRule(rule);
+	S.addRule(a);
+	S.addRule(b);
+
+	Variables A("A");
+	Rule e("101");
+	Rule f("0");
+
+	A.addRule(e);
+	A.addRule(f);
+
+	CFG grammar1("G1", 10, S); //граматика G1 с променливи S и A, като S е стартовата променлива
 ```
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
-
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
