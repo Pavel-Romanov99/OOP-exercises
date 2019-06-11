@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstring>
 #include <fstream>
+#include <string>
 using namespace std;
 
 const int MAX = 100;
@@ -45,12 +46,21 @@ public:
 		}
 		return check;
 	}
+
+	//setter
+	void set_rule(const char* a)
+	{
+		for (int i = 0; i < MAX; i++)
+		{
+			rule[i] = a[i];
+		}
+	}
 };
 
 class Variables
 {
 private:
-	char name;
+	string name;
 	vector <Rule> rules;
 
 public:
@@ -58,22 +68,25 @@ public:
 	//default constructor
 	Variables()
 	{
-		this->name = 'S';
+		this->name = "S";
 	}
 	
 	//constructor
-	Variables(char var)
+	Variables(string var)
 	{
-		if (var >= 65 && var <= 90)
-		{
-			this->name = var;
-		}
+		this->name = var;
 	}
 
 	//getter
-	char getName()
+	string getName()
 	{
 		return name;
+	}
+
+	//set name
+	void set_name(string name)
+	{
+		this->name = name;
 	}
 
 	//adding a rule
@@ -85,8 +98,8 @@ public:
 	//finding the position in the array
 	int Position_(const Rule &other)
 	{
-		int counter = 0;
 
+		int counter = 0;
 		for (int i = 0; i < rules.size(); i++)
 		{
 			if (rules[i] == other)
@@ -95,6 +108,7 @@ public:
 			}
 			counter++;
 		}
+		return -1;
 	}
 
 	//removing a rule
@@ -127,6 +141,7 @@ public:
 		os << endl;
 		return os;
 	}
+
 };
 
 //--------------------------------------------------------------------
@@ -171,7 +186,7 @@ public:
 	//Adding a variable to the grammar
 	void addVariable(const Variables &other)
 	{
-		if (size < capacity)
+		if (size < capacity - 1)
 		{
 			variables[++size] = other;
 		}
@@ -199,50 +214,218 @@ public:
 		}
 	}
 
-	//Union of grammars
-	CFG Unify(const CFG &G1, const CFG &G2)
+	//get starting variable
+	Variables get_start()
 	{
+		return this->start;
+	}
 
+	string get_name()
+	{
+		return this->name;
+	}
+
+	//Union of grammars
+	void Unify( CFG &G1,  CFG &other)
+	{
+		other.capacity = G1.capacity + this->capacity;
+		Variables *oldVariables = this->variables;
+		other.variables = new Variables[other.capacity];
+		int oldSize = other.size;
+		other.size = 0;
+
+		for (int i = 1; i < this->size + 1; i++)
+		{
+			other.addVariable(oldVariables[i]);
+		}
+
+		for (int i = 1; i < G1.size + 1; i++)
+		{
+			other.addVariable(G1.variables[i]);
+		}
+		
+		string str1 = G1.start.getName();
+		string str2 = this->start.getName();
+
+		char tab1[1024];
+		strcpy_s(tab1, str1.c_str());
+
+		char tab2[1024];
+		strcpy_s(tab2, str2.c_str());
+
+		Rule rule1(tab1);
+		Rule rule2(tab2);
+
+		other.start.addRule(rule1);
+		other.start.addRule(rule2);
+		other.addVariable(other.start);
 	}
 
 	//Concatenation of grammars
-	CFG Concatenate(const CFG &G1, const CFG &G2)
+	void Concatenate( CFG &G1, CFG &other)
 	{
+		other.capacity = G1.capacity + this->capacity;
+		Variables *oldVariables = this->variables;
+		other.variables = new Variables[other.capacity];
+		int oldSize = other.size;
+		other.size = 0;
 
+		for (int i = 1; i < this->size + 1; i++)
+		{
+			other.addVariable(oldVariables[i]);
+		}
+
+		for (int i = 1; i < G1.size + 1; i++)
+		{
+			other.addVariable(G1.variables[i]);
+		}
+
+		string str1 = G1.start.getName();
+		string str2 = this->start.getName();
+		string str = str1 + str2;
+
+		char tab1[1024];
+		strcpy_s(tab1, str.c_str());
+
+		Rule rule1(tab1);
+
+		other.start.addRule(rule1);
+		other.addVariable(other.start);
+	}
+
+	//Klenee star
+	void Klenee_star( CFG &other)
+	{
+		Variables *oldVariables = this->variables;
+		other.variables = new Variables[other.capacity];
+		int oldSize = other.size;
+		other.size = 0;
+
+		for (int i = 1; i < this->size + 1; i++)
+		{
+			other.addVariable(oldVariables[i]);
+		}
+
+		string str1 = "epsilon";
+		string str2 = this->start.getName();
+		string str = str2 + other.start.getName();
+
+
+		char tab1[1024];
+		strcpy_s(tab1, str1.c_str());
+
+		char tab2[1024];
+		strcpy_s(tab2, str.c_str());
+
+		Rule rule1(tab1);
+		Rule rule2(tab2);
+
+		other.start.addRule(rule1);
+		other.start.addRule(rule2);
+		other.addVariable(other.start);
 	}
 };
 
+
 int main()
 {
-	Variables S;
-	Rule rule("1S1");
+	// --------- first grammar ---------------
+	Variables S("S");
 	Rule a("LOL");
 	Rule b("HEY");
-
-	S.addRule(rule);
 	S.addRule(a);
 	S.addRule(b);
 
-	Variables A('A');
+	Variables A("A");
 	Rule e("101");
 	Rule f("0");
-
 	A.addRule(e);
 	A.addRule(f);
 
-	Variables C('C');
-	Rule c("121");
-	Rule d("15");
+	CFG grammar1("G1", 10, S);
+	grammar1.addVariable(A);
 
+
+
+	// -------- second grammar -----------------
+	Variables C("C");
+	Rule c("1D1");
+	Rule d("15");
 	C.addRule(c);
 	C.addRule(d);
 
-	Variables H;
+	Variables D("D");
+	Rule p("13");
+	Rule u("11");
+	D.addRule(p);
+	D.addRule(u);
 
-	CFG grammar("G", 10, H);
-	grammar.addVariable(S);
-	grammar.addVariable(A);
-	grammar.addVariable(C);
-	grammar.PrintGrammar();
-	grammar.Write();
+	CFG grammar2("G2", 10, C);
+	grammar2.addVariable(D);
+
+	// --------- third grammar -----------------
+	Variables Y("Y");
+	CFG grammar3("G3", 20, Y);
+
+
+
+
+	vector<CFG> grammars;
+	grammars.push_back(grammar1);
+	grammars.push_back(grammar2);
+
+	cout << grammars[0].get_name() << " " << grammars[1].get_name() << endl;
+
+	string command;
+
+	while (true)
+	{
+		cin >> command;
+
+		//Write command
+		if (command == "write")
+		{
+			string argument1;
+			cin >> argument1;
+
+			int counter = 0;
+			for (int i = 0; i < 3; i++)
+			{
+				if (argument1 == grammars[i].get_name())
+				{
+					break;
+				}
+				counter++;
+			}
+			int index = counter;
+			grammars[index].Write();
+		}
+
+		//Print command
+		if (command == "print")
+		{
+			string argument;
+			cin >> argument;
+
+			int counter = 0;
+			for (int i = 0; i < 3; i++)
+			{
+				if (argument == grammars[i].get_name())
+				{
+					break;
+				}
+				counter++;
+			}
+			int index = counter;
+			grammars[index].PrintGrammar();
+		}
+
+		//exit command
+		if (command == "exit")
+		{
+			cout << "Program is done!" << endl;
+			return 0;
+		}
+	}
+	
 }
