@@ -162,7 +162,8 @@ public:
 	CFG()
 	{
 		name = "G";
-		capacity = 10;
+		capacity = 30;
+		size = 0;
 		variables = new Variables[capacity];
 		variables[++size] = this->start;
 	}
@@ -172,9 +173,25 @@ public:
 	{
 		this->name = name;
 		this->capacity = capacity;
+		this->size = 0;
 		this->start = new_start;
 		variables = new Variables[capacity];
 		variables[++size] = new_start;
+	}
+
+	//copy constructor
+	CFG(const CFG &other)
+	{
+		capacity = capacity + other.capacity;
+		Variables *oldVariables = other.variables;
+		variables = new Variables[other.capacity];
+		int oldSize = other.size;
+
+		for (int i = 0; i < oldSize; i++)
+		{
+			this->addVariable(oldVariables[i]);
+		}
+
 	}
 
 	//destructor
@@ -342,7 +359,7 @@ int main()
 	A.addRule(e);
 	A.addRule(f);
 
-	CFG grammar1("G1", 10, S);
+	CFG grammar1("G1", 20, S);
 	grammar1.addVariable(A);
 
 
@@ -360,21 +377,17 @@ int main()
 	D.addRule(p);
 	D.addRule(u);
 
-	CFG grammar2("G2", 10, C);
+	CFG grammar2("G2", 20, C);
 	grammar2.addVariable(D);
 
 	// --------- third grammar -----------------
 	Variables Y("Y");
 	CFG grammar3("G3", 20, Y);
 
-
-
-
 	vector<CFG> grammars;
 	grammars.push_back(grammar1);
 	grammars.push_back(grammar2);
-
-	cout << grammars[0].get_name() << " " << grammars[1].get_name() << endl;
+	grammars.push_back(grammar3);
 
 	string command;
 
